@@ -8,25 +8,25 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://starter.rasmic.xyz"),
+  metadataBase: new URL("https://cr.rasmic.xyz"),
   title: {
     default: 'Component Renderer',
     template: `%s | Component Renderer`
   },
-  description: 'Visualize shadcn components',
+  description: 'Visualize and customize shadcn components. Use the components in your codebase',
   openGraph: {
-    description: 'Everything you need to quickly build your SaaS giving you time to focus on what really matters',
-    images: ['https://utfs.io/f/8a428f85-ae83-4ca7-9237-6f8b65411293-eun6ii.png'],
-    url: 'https://starter.rasmic.xyz/'
+    description: 'Visualize and customize shadcn components. Use the components in your codebase',
+    images: ['https://utfs.io/f/68fbf583-0a13-43d5-bf31-e39931508671-twtuhf.jpeg'],
+    url: 'https://cr.rasmic.xyz/'
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Component Renderer',
-    description: 'Everything you need to quickly build your SaaS giving you time to focus on what really matters.',
+    description: 'Visualize and customize shadcn components. Use the components in your codebase.',
     siteId: "",
     creator: "@rasmickyy",
     creatorId: "",
-    images: ['https://utfs.io/f/8a428f85-ae83-4ca7-9237-6f8b65411293-eun6ii.png'],
+    images: ['https://utfs.io/f/68fbf583-0a13-43d5-bf31-e39931508671-twtuhf.jpeg'],
   },
 }
 
