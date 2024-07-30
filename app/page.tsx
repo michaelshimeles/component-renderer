@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Button } from '../components/ui/button';
+import { Button, ButtonProps } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Clipboard, Loader2 } from 'lucide-react';
@@ -15,13 +15,34 @@ import {
 } from "../components/ui/dialog";
 import PageWrapper from "../components/wrapper/page-wrapper";
 
+type OptionType = {
+  name: string;
+  type: 'text' | 'select' | 'boolean' | 'function';
+  label: string;
+  default: string | boolean;
+  options?: string[];
+  render?: (value: any) => Partial<ButtonProps>;
+}
+
+type ComponentConfig = {
+  name: string;
+  import: string;
+  component: React.ComponentType<any>;
+  render: (props: any) => React.ReactElement;
+  options: OptionType[];
+}
+
+type ComponentsConfig = {
+  [key: string]: ComponentConfig;
+}
+
 // Component Configuration
-const componentsConfig = {
+const componentsConfig: ComponentsConfig = {
   button: {
     name: 'Button',
     import: 'import { Button } from "@/components/ui/button"',
     component: Button,
-    render: (props) => <Button {...props}>{props.children}</Button>,
+    render: (props: ButtonProps) => <Button {...props}>{props.children}</Button>,
     options: [
       {
         name: 'children',
@@ -48,7 +69,7 @@ const componentsConfig = {
         type: 'boolean',
         label: 'Loading State',
         default: false,
-        render: (isLoading) => isLoading ? {
+        render: (isLoading: boolean) => isLoading ? {
           disabled: true,
           children: (
             <>
@@ -71,7 +92,7 @@ const componentsConfig = {
   DialogTrigger,
 } from "@/components/ui/dialog"`,
     component: Dialog,
-    render: (props) => (
+    render: (props: { triggerText: string; title: string; description: string; children: React.ReactNode }) => (
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="outline">{props.triggerText}</Button>
@@ -114,38 +135,38 @@ const componentsConfig = {
   }
 };
 
-const ComponentRenderer = () => {
-  const [selectedComponent, setSelectedComponent] = useState(Object.keys(componentsConfig)[0]);
-  const [componentOptions, setComponentOptions] = useState({});
+const ComponentRenderer: React.FC = () => {
+  const [selectedComponent, setSelectedComponent] = useState<string>(Object.keys(componentsConfig)[0]);
+  const [componentOptions, setComponentOptions] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    const defaultOptions = {};
+    const defaultOptions: Record<string, any> = {};
     componentsConfig[selectedComponent].options.forEach(option => {
-      defaultOptions[option?.name] = option?.default;
+      defaultOptions[option.name] = option.default;
     });
     setComponentOptions(defaultOptions);
   }, [selectedComponent]);
 
-  const renderOptionInput = (option) => {
-    switch (option?.type) {
+  const renderOptionInput = (option: OptionType) => {
+    switch (option.type) {
       case 'text':
         return (
           <Input
-            value={componentOptions[option?.name]}
-            onChange={(e) => setComponentOptions({ ...componentOptions, [option?.name]: e.target.value })}
+            value={componentOptions[option.name]}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setComponentOptions({ ...componentOptions, [option.name]: e.target.value })}
           />
         );
       case 'select':
         return (
           <Select
             value={componentOptions[option.name]}
-            onValueChange={(value) => setComponentOptions({ ...componentOptions, [option.name]: value })}
+            onValueChange={(value: string) => setComponentOptions({ ...componentOptions, [option.name]: value })}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {option.options.map((opt) => (
+              {option.options?.map((opt) => (
                 <SelectItem key={opt} value={opt}>{opt}</SelectItem>
               ))}
             </SelectContent>
@@ -156,7 +177,7 @@ const ComponentRenderer = () => {
           <input
             type="checkbox"
             checked={componentOptions[option.name]}
-            onChange={(e) => setComponentOptions({ ...componentOptions, [option.name]: e.target.checked })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setComponentOptions({ ...componentOptions, [option.name]: e.target.checked })}
           />
         );
       default:
@@ -166,12 +187,12 @@ const ComponentRenderer = () => {
 
   const renderComponent = () => {
     const ComponentToRender = componentsConfig[selectedComponent].render;
-    const props = Object.entries(componentOptions).reduce((acc, [key, value]) => {
+    const props = Object.entries(componentOptions).reduce<Record<string, any>>((acc, [key, value]) => {
       const option = componentsConfig[selectedComponent].options.find(opt => opt.name === key);
       if (option && option.render) {
         return { ...acc, ...option.render(value) };
       }
-      if (option && option?.type === 'function') {
+      if (option && option.type === 'function') {
         return acc; // Skip function props in preview
       }
       return { ...acc, [key]: value };
@@ -180,7 +201,7 @@ const ComponentRenderer = () => {
     return <ComponentToRender {...props} />;
   };
 
-  const getComponentCode = () => {
+  const getComponentCode = (): string => {
     const config = componentsConfig[selectedComponent];
     if (selectedComponent === 'dialog') {
       return `${config.import}
@@ -239,7 +260,7 @@ const ComponentRenderer = () => {
                   </SelectContent>
                 </Select>
                 {componentsConfig[selectedComponent].options.map((option) => (
-                  option?.type !== 'function' && (
+                  option.type !== 'function' && (
                     <div key={option.name}>
                       <label className="block text-sm font-medium dark:text-gray-200 text-gray-700 mb-1">{option.label}</label>
                       {renderOptionInput(option)}
