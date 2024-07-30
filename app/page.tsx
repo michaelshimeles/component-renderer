@@ -45,6 +45,8 @@ import {
   CommandShortcut,
 } from "@/components/ui/command"
 import { Textarea } from '@/components/ui/textarea';
+import FloatingBadge from "../components/floating-badge"
+
 
 type OptionType = {
   name: string;
@@ -1249,6 +1251,7 @@ return (
           </Card>
         </div>
       </div>
+      <FloatingBadge />
     </PageWrapper>
   );
 };
