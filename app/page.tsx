@@ -50,7 +50,7 @@ type OptionType = {
   name: string;
   type: 'text' | 'select' | 'boolean' | 'function';
   label: string;
-  default: string | boolean;
+  default: string | boolean | any;
   options?: string[];
   render?: (value: any) => Partial<ButtonProps>;
 }
@@ -566,7 +566,7 @@ const ComponentRenderer: React.FC = () => {
                       variant="destructive"
                       size="sm"
                       onClick={() => {
-                        const newGroups = groups.filter((_, index) => index !== groupIndex);
+                        const newGroups = groups.filter((_: any, index: any) => index !== groupIndex);
                         setComponentOptions({ ...componentOptions, [option.name]: newGroups });
                       }}
                     >
