@@ -10,10 +10,10 @@ import './globals.css'
 export const metadata: Metadata = {
   metadataBase: new URL("https://starter.rasmic.xyz"),
   title: {
-    default: 'Nextjs Starter Kit',
-    template: `%s | Nextjs Starter Kit`
+    default: 'Component Renderer',
+    template: `%s | Component Renderer`
   },
-  description: 'Everything you need to quickly build your SaaS giving you time to focus on what really matters',
+  description: 'Visualize shadcn components',
   openGraph: {
     description: 'Everything you need to quickly build your SaaS giving you time to focus on what really matters',
     images: ['https://utfs.io/f/8a428f85-ae83-4ca7-9237-6f8b65411293-eun6ii.png'],
@@ -21,10 +21,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nextjs Starter',
+    title: 'Component Renderer',
     description: 'Everything you need to quickly build your SaaS giving you time to focus on what really matters.',
     siteId: "",
-    creator: "@rasmic",
+    creator: "@rasmickyy",
     creatorId: "",
     images: ['https://utfs.io/f/8a428f85-ae83-4ca7-9237-6f8b65411293-eun6ii.png'],
   },

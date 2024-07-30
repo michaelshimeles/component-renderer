@@ -49,7 +49,7 @@ export default function NavBar() {
                     </SheetTrigger>
                     <SheetContent side="left">
                         <SheetHeader>
-                            <SheetTitle>Component Configurer</SheetTitle>
+                            <SheetTitle>component renderer</SheetTitle>
                         </SheetHeader>
                         <div className="flex flex-col space-y-3 mt-[1rem]">
                             <DialogClose asChild>
@@ -72,7 +72,7 @@ export default function NavBar() {
             <NavigationMenu>
                 <NavigationMenuList className="max-[825px]:hidden flex gap-3 w-[100%] justify-between">
                     <Link href="/" className="pl-2 flex items-center" aria-label="Home">
-                        <BlocksIcon aria-hidden="true" />
+                        <p className='font-semibold'>component renderer</p>
                         <span className="sr-only">Home</span>
                     </Link>
                 </NavigationMenuList>
