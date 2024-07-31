@@ -53,9 +53,11 @@ type OptionType = {
   name: string;
   type: 'text' | 'select' | 'boolean' | 'function' | 'slider' | 'color';
   label: string;
-  default: string | boolean | any;
+  default: string | boolean | number | any;
   options?: string[];
   render?: (value: any) => Partial<ButtonProps>;
+  min?: number;  // Add this line
+  max?: number;  // Add this line
 }
 
 type ComponentConfig = {
@@ -69,7 +71,6 @@ type ComponentConfig = {
 type ComponentsConfig = {
   [key: string]: ComponentConfig;
 }
-
 
 const componentsConfig: ComponentsConfig = {
   button: {
@@ -147,7 +148,6 @@ const componentsConfig: ComponentsConfig = {
       }
     ]
   },
-
   dialog: {
     name: 'Dialog',
     import: `import {
@@ -1109,8 +1109,6 @@ const ComponentRenderer: React.FC = () => {
     return <ComponentToRender {...props} />;
   };
 
-
-
   const getComponentCode = (): string => {
     const config = componentsConfig[selectedComponent];
 
@@ -1129,7 +1127,6 @@ const ComponentRenderer: React.FC = () => {
       </Alert>
     )
   }`;
-
       case 'dialog':
         return `${config.import}
   import { Button } from "@/components/ui/button"
@@ -1152,7 +1149,6 @@ const ComponentRenderer: React.FC = () => {
       </Dialog>
     )
   }`;
-
       case 'accordion':
         const items = componentOptions?.items?.map((item: any, index: number) => `
         <AccordionItem value="item-${index + 1}">
@@ -1217,7 +1213,6 @@ return (
 </Command>
 )
 }`;
-
       default: // This will handle the Button and any other components
         let children = componentOptions.children || '';
         const isLoading = componentOptions.loading;
@@ -1253,6 +1248,7 @@ return (
   }`;
     }
   };
+
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(getComponentCode());
@@ -1262,9 +1258,6 @@ return (
       toast.error("Failed to copy code");
     }
   };
-
-  console.log('')
-
 
   return (
     <PageWrapper>
