@@ -46,11 +46,12 @@ import {
 } from "@/components/ui/command"
 import { Textarea } from '@/components/ui/textarea';
 import FloatingBadge from "../components/floating-badge"
-
+import { Slider } from "@/components/ui/slider"
+import { HexColorPicker } from "react-colorful";
 
 type OptionType = {
   name: string;
-  type: 'text' | 'select' | 'boolean' | 'function';
+  type: 'text' | 'select' | 'boolean' | 'function' | 'slider' | 'color';
   label: string;
   default: string | boolean | any;
   options?: string[];
@@ -69,12 +70,25 @@ type ComponentsConfig = {
   [key: string]: ComponentConfig;
 }
 
+
 const componentsConfig: ComponentsConfig = {
   button: {
     name: 'Button',
     import: 'import { Button } from "@/components/ui/button"',
     component: Button,
-    render: (props: ButtonProps) => <Button {...props}>{props.children}</Button>,
+    render: (props: ButtonProps & { roundness: number; backgroundColor: string; textColor: string }) => (
+      <Button
+        {...props}
+        className={`${props.className || ''}`}
+        style={{
+          borderRadius: `${props.roundness}px`,
+          backgroundColor: props.backgroundColor,
+          color: props.textColor,
+        }}
+      >
+        {props.children}
+      </Button>
+    ),
     options: [
       {
         name: 'children',
@@ -110,9 +124,30 @@ const componentsConfig: ComponentsConfig = {
             </>
           )
         } : {}
+      },
+      {
+        name: 'roundness',
+        type: 'slider',
+        label: 'Roundness',
+        default: 4,
+        min: 0,
+        max: 20
+      },
+      {
+        name: 'backgroundColor',
+        type: 'color',
+        label: 'Background Color',
+        default: '#000000'
+      },
+      {
+        name: 'textColor',
+        type: 'color',
+        label: 'Text Color',
+        default: '#ffffff'
       }
     ]
   },
+
   dialog: {
     name: 'Dialog',
     import: `import {
@@ -391,6 +426,30 @@ const getIcon = (iconName: string) => {
     RocketIcon: <RocketIcon className="mr-2 h-4 w-4" />,
   };
   return icons[iconName] || null;
+};
+
+const ColorPicker: React.FC<{ color: string; onChange: (color: string) => void }> = ({ color, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className="w-[280px] justify-start text-left font-normal"
+        >
+          <div
+            className="w-4 h-4 rounded-full mr-2 shrink-0"
+            style={{ backgroundColor: color }}
+          />
+          {color}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <HexColorPicker color={color} onChange={onChange} />
+      </PopoverContent>
+    </Popover>
+  );
 };
 
 
@@ -997,6 +1056,28 @@ const ComponentRenderer: React.FC = () => {
           );
         }
         return null;
+      case 'slider':
+        return (
+          <Slider
+            value={[componentOptions[option.name]]}
+            onValueChange={(value) => {
+              setComponentOptions(prev => ({
+                ...prev,
+                [option.name]: value[0]
+              }));
+            }}
+            max={option.max}
+            min={option.min}
+            step={1}
+          />
+        );
+      case 'color':
+        return (
+          <ColorPicker
+            color={componentOptions[option.name]}
+            onChange={(color) => setComponentOptions({ ...componentOptions, [option.name]: color })}
+          />
+        );
       default:
         return null;
     }
@@ -1009,8 +1090,8 @@ const ComponentRenderer: React.FC = () => {
       if (option && option.render) {
         return { ...acc, ...option.render(value) };
       }
-      if (option && option.type === 'function') {
-        return { ...acc, [key]: value }; // Include function props in preview
+      if (option && (option.type === 'function' || option.type === 'slider')) {
+        return { ...acc, [key]: value };
       }
       return { ...acc, [key]: value };
     }, {});
@@ -1020,9 +1101,14 @@ const ComponentRenderer: React.FC = () => {
       props.items = props.items ? [props.items] : [];
     }
 
+    // For Button, we need to apply the roundness directly
+    if (selectedComponent === 'button') {
+      props.className = `rounded-[${props.roundness}px] ${props.className || ''}`;
+    }
+
     return <ComponentToRender {...props} />;
   };
-  ;
+
 
 
   const getComponentCode = (): string => {
@@ -1135,10 +1221,11 @@ return (
       default: // This will handle the Button and any other components
         let children = componentOptions.children || '';
         const isLoading = componentOptions.loading;
+        const roundness = componentOptions.roundness;
         const props = Object.entries(componentOptions)
           .filter(([key, value]) => {
             const option = config.options.find(opt => opt.name === key);
-            return option?.type !== 'function' && key !== 'children' && key !== 'loading';
+            return option?.type !== 'function' && key !== 'children' && key !== 'loading' && key !== 'roundness';
           })
           .map(([key, value]) => {
             if (typeof value === 'boolean') {
@@ -1158,7 +1245,7 @@ return (
 
   export function ${config.name}Demo() {
     return (
-      <${config.name}${props ? ' ' + props : ''}${isLoading ? ' disabled' : ''}>
+      <${config.name}${props ? ' ' + props : ''}${isLoading ? ' disabled' : ''} className="rounded-[${roundness}px]">
         ${isLoading ? '<Loader2 className="mr-2 h-4 w-4 animate-spin" />' : ''}
         ${children}
       </${config.name}>
@@ -1166,7 +1253,6 @@ return (
   }`;
     }
   };
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(getComponentCode());
@@ -1177,18 +1263,7 @@ return (
     }
   };
 
-  const getIcon = (iconName: string) => {
-    const icons: { [key: string]: React.ReactNode } = {
-      CalendarIcon: <CalendarIcon className="mr-2 h-4 w-4" />,
-      EnvelopeClosedIcon: <EnvelopeClosedIcon className="mr-2 h-4 w-4" />,
-      FaceIcon: <FaceIcon className="mr-2 h-4 w-4" />,
-      GearIcon: <GearIcon className="mr-2 h-4 w-4" />,
-      PersonIcon: <PersonIcon className="mr-2 h-4 w-4" />,
-      RocketIcon: <RocketIcon className="mr-2 h-4 w-4" />,
-    };
-    return icons[iconName] || null;
-  };
-
+  console.log('')
 
 
   return (

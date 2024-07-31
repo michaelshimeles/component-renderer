@@ -178,6 +178,29 @@ const config: Config = {
         { values: flattenColorPalette(theme("backgroundColor")), type: "color" }
       );
     },
+    function ({ addUtilities, theme, variants }: any) {
+      const newUtilities = {
+        ".bg-custom": {
+          backgroundColor: "var(--bg-custom-color)",
+        },
+      };
+      addUtilities(newUtilities, variants("backgroundColor"));
+    },
+  ],
+  safelist: [
+    {
+      pattern: /^bg-/,
+      variants: ["hover", "focus"],
+    },
+    {
+      pattern: /^text-/,
+      variants: ["hover", "focus"],
+    },
+    {
+      pattern: /^border-/,
+      variants: ["hover", "focus"],
+    },
+    // Add any other patterns you might need
   ],
 };
 
