@@ -77,14 +77,16 @@ const componentsConfig: ComponentsConfig = {
     name: 'Button',
     import: 'import { Button } from "@/components/ui/button"',
     component: Button,
-    render: (props: ButtonProps & { roundness: number; backgroundColor: string; textColor: string }) => (
+    render: (props: ButtonProps & { roundness: number; backgroundColor: string; textColor: string; useCustomColors: boolean }) => (
       <Button
         {...props}
         className={`${props.className || ''}`}
         style={{
           borderRadius: `${props.roundness}px`,
-          backgroundColor: props.backgroundColor,
-          color: props.textColor,
+          ...(props.useCustomColors && {
+            backgroundColor: props.backgroundColor,
+            color: props.textColor,
+          }),
         }}
       >
         {props.children}
@@ -135,6 +137,12 @@ const componentsConfig: ComponentsConfig = {
         max: 20
       },
       {
+        name: 'useCustomColors',
+        type: 'boolean',
+        label: 'Use Custom Colors',
+        default: false
+      },
+      {
         name: 'backgroundColor',
         type: 'color',
         label: 'Background Color',
@@ -148,6 +156,7 @@ const componentsConfig: ComponentsConfig = {
       }
     ]
   },
+
   dialog: {
     name: 'Dialog',
     import: `import {
