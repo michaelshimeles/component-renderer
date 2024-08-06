@@ -156,7 +156,6 @@ const componentsConfig: ComponentsConfig = {
       }
     ]
   },
-
   dialog: {
     name: 'Dialog',
     import: `import {
@@ -422,7 +421,6 @@ import {
       }
     ]
   }
-
 };
 
 const getIcon = (iconName: string) => {
@@ -1122,6 +1120,52 @@ const ComponentRenderer: React.FC = () => {
     const config = componentsConfig[selectedComponent];
 
     switch (selectedComponent) {
+      case 'button':
+        let children = componentOptions.children || '';
+        const isLoading = componentOptions.loading;
+        const roundness = componentOptions.roundness;
+        const useCustomColors = componentOptions.useCustomColors;
+        const props = Object.entries(componentOptions)
+          .filter(([key, value]) => {
+            const option = config.options.find(opt => opt.name === key);
+            return option?.type !== 'function' &&
+                   !['children', 'loading', 'roundness', 'useCustomColors', 'backgroundColor', 'textColor'].includes(key);
+          })
+          .map(([key, value]) => {
+            if (typeof value === 'boolean') {
+              return value ? key : null;
+            }
+            return `${key}=${typeof value === 'string' ? `"${value}"` : `{${JSON.stringify(value)}}`}`;
+          })
+          .filter(Boolean)
+          .join(' ');
+
+        let imports = `${config.import}`;
+        if (isLoading) {
+          imports += `\nimport { Loader2 } from "lucide-react"`;
+        }
+
+        let style = `style={{ borderRadius: "${roundness}px"`;
+        if (useCustomColors) {
+          style += `, backgroundColor: "${componentOptions.backgroundColor}", color: "${componentOptions.textColor}"`;
+        }
+        style += ' }';
+
+        return `${imports}
+
+  export function ${config.name}Demo() {
+    return (
+      <${config.name}
+        ${props}
+        ${style}
+        ${isLoading ? 'disabled' : ''}
+      >
+        ${isLoading ? '<Loader2 className="mr-2 h-4 w-4 animate-spin" />' : ''}
+        ${children}
+      </${config.name}>
+    )
+  }`;
+
       case 'alert':
         return `${config.import}
 
@@ -1136,6 +1180,7 @@ const ComponentRenderer: React.FC = () => {
       </Alert>
     )
   }`;
+
       case 'dialog':
         return `${config.import}
   import { Button } from "@/components/ui/button"
@@ -1158,6 +1203,7 @@ const ComponentRenderer: React.FC = () => {
       </Dialog>
     )
   }`;
+
       case 'accordion':
         const items = componentOptions?.items?.map((item: any, index: number) => `
         <AccordionItem value="item-${index + 1}">
@@ -1176,88 +1222,59 @@ const ComponentRenderer: React.FC = () => {
       </Accordion>
     )
   }`;
+
       case 'popover':
         return `${config.import}
-import { Button } from "@/components/ui/button"
+  import { Button } from "@/components/ui/button"
 
-export function PopoverDemo() {
-return (
-  <Popover>
-    <PopoverTrigger asChild>
-      <Button variant="outline">${componentOptions.triggerText}</Button>
-    </PopoverTrigger>
-    <PopoverContent className="w-80">
-      <div className="grid gap-4">
-        <div className="space-y-2">
-          <h4 className="font-medium leading-none">Popover Content</h4>
-          <p className="text-sm text-muted-foreground">${componentOptions.content}</p>
-        </div>
-      </div>
-    </PopoverContent>
-  </Popover>
-)
-}`;
+  export function PopoverDemo() {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline">${componentOptions.triggerText}</Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80">
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none">Popover Content</h4>
+              <p className="text-sm text-muted-foreground">${componentOptions.content}</p>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    )
+  }`;
+
       case 'command':
         const groups = Array.isArray(componentOptions.groups) ? componentOptions.groups : [];
         const groupsCode = groups.map((group: any) => `
-<CommandGroup heading="${group.heading}">
-  ${group.items.map((item: any) => `
-  <CommandItem>
-    <${item.icon} className="mr-2 h-4 w-4" />
-    <span>${item.label}</span>
-    ${item.shortcut ? `<CommandShortcut>${item.shortcut}</CommandShortcut>` : ''}
-  </CommandItem>`).join('')}
-</CommandGroup>`).join('\n');
+    <CommandGroup heading="${group.heading}">
+      ${group.items.map((item: any) => `
+      <CommandItem>
+        <${item.icon} className="mr-2 h-4 w-4" />
+        <span>${item.label}</span>
+        ${item.shortcut ? `<CommandShortcut>${item.shortcut}</CommandShortcut>` : ''}
+      </CommandItem>`).join('')}
+    </CommandGroup>`).join('\n');
 
         return `${config.import}
 
-export function CommandDemo() {
-return (
-<Command className="rounded-lg border shadow-md">
-  <CommandInput placeholder="${componentOptions.placeholder}" />
-  <CommandList>
-    <CommandEmpty>${componentOptions.emptyMessage}</CommandEmpty>
-    ${groupsCode}
-  </CommandList>
-</Command>
-)
-}`;
-      default: // This will handle the Button and any other components
-        let children = componentOptions.children || '';
-        const isLoading = componentOptions.loading;
-        const roundness = componentOptions.roundness;
-        const props = Object.entries(componentOptions)
-          .filter(([key, value]) => {
-            const option = config.options.find(opt => opt.name === key);
-            return option?.type !== 'function' && key !== 'children' && key !== 'loading' && key !== 'roundness';
-          })
-          .map(([key, value]) => {
-            if (typeof value === 'boolean') {
-              return value ? key : null;
-            }
-            return `${key}=${typeof value === 'string' ? `"${value}"` : `{${JSON.stringify(value)}}`}`;
-          })
-          .filter(Boolean)
-          .join(' ');
-
-        let imports = `${config.import}`;
-        if (isLoading) {
-          imports += `\nimport { Loader2 } from "lucide-react"`;
-        }
-
-        return `${imports}
-
-  export function ${config.name}Demo() {
+  export function CommandDemo() {
     return (
-      <${config.name}${props ? ' ' + props : ''}${isLoading ? ' disabled' : ''} className="rounded-[${roundness}px]">
-        ${isLoading ? '<Loader2 className="mr-2 h-4 w-4 animate-spin" />' : ''}
-        ${children}
-      </${config.name}>
+      <Command className="rounded-lg border shadow-md">
+        <CommandInput placeholder="${componentOptions.placeholder}" />
+        <CommandList>
+          <CommandEmpty>${componentOptions.emptyMessage}</CommandEmpty>
+          ${groupsCode}
+        </CommandList>
+      </Command>
     )
   }`;
+
+      default:
+        return '';
     }
   };
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(getComponentCode());
